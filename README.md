@@ -1,6 +1,8 @@
 # pytest-needle
 
 ### ATTENTION: CURRENTLY, THIS IS JUST AN IDEA [1]
+### ATTENTION 2: we should pick a different name because of https://pytest-needle.readthedocs.io/en/latest/
+
 
 You have a test that passes when executed alone but fails when running in the suite. What's happening? My two cents that some previous test keeps the thing dirty. But wich one/s, maybe the previous are a lot, right? 
 
