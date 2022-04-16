@@ -1,8 +1,4 @@
-# pytest-needle
-
-### ATTENTION: CURRENTLY, THIS IS JUST AN IDEA [1]
-### ATTENTION 2: we should pick a different name because of https://pytest-needle.readthedocs.io/en/latest/
-
+# pytest-leak-finder
 
 You have a test that passes when executed alone but fails when running in the suite. What's happening? My two cents that some previous test keeps the thing dirty. But wich one/s, maybe the previous are a lot, right? 
 
@@ -21,20 +17,20 @@ test.py:test3 PASSED
 test.py:test4 PASSED
 test.py:test5 FAILED
 
-$ pytest --needle test.py:test5
+$ pytest --leak-finder test.py:test5
 
 test.py:test1 PASSED
 test.py:test2 PASSED
 test.py:test5 PASSED
 
-$ pytest --needle test.py:test5
+$ pytest --leak-finder test.py:test5
 
 test.py:test3 PASSED
 test.py:test4 PASSED
 test.py:test5 FAILED
 
 
-$ pytest --needle test.py:test5
+$ pytest --leak-finder test.py:test5
 
 test.py:test3 PASSED
 test.py:test5 FAILED
