@@ -12,7 +12,7 @@ from _pytest.reports import TestReport
 if TYPE_CHECKING:
     from _pytest.cacheprovider import Cache
 
-CACHE_DIR = "cache/leak-finder"
+CACHE_NAME = "cache/leakfinder"
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -35,8 +35,32 @@ def pytest_configure(config: Config) -> None:
 def pytest_sessionfinish(session: Session) -> None:
     if not session.config.getoption("leakfinder"):
         assert session.config.cache is not None
-        # Clear the list of failing tests if the plugin is not active.
-        session.config.cache.set(CACHE_DIR, [])
+        # Clear the cache if the plugin is not active.
+        session.config.cache.set(CACHE_NAME, {})
+
+
+def bizect(l, steps="a"):
+    """
+    given a list, select the a/b n-th group plus the last element 
+
+    >>> l = list(range(10))
+    >>> bizect(l)                                                                                                                                            
+    [0, 1, 2, 3, 4, 9]
+    >>> bizect(l, steps="b")                                                                                                                                            
+    [5, 6, 7, 8, 9]
+    >>> bizect(l, "ba")                                                                                                                                      
+    [5, 6, 9]
+    >>> bizect(l, "bb")                                                                                                                                      
+    [7, 8, 9]
+    """
+    r = l.copy()
+    for key in steps:
+        if key == "a":
+            r = r[:len(r)//2]
+        else: 
+            r = r[len(r)//2:-1]
+        r += [l[-1]]
+    return r
 
 
 class LeakFinderPlugin:
@@ -44,9 +68,10 @@ class LeakFinderPlugin:
         self.config = config
         self.session: Optional[Session] = None
         self.report_status = ""
-        assert config.cache is not None
         self.cache: Cache = config.cache
-        self.lastfailed: Optional[str] = self.cache.get(CACHE_DIR, None)
+        self.previous = self.cache.get(CACHE_NAME, {"steps": "", "target": None}) 
+        self.target = self.previous.get("target")
+
 
     def pytest_sessionstart(self, session: Session) -> None:
         self.session = session
@@ -54,62 +79,40 @@ class LeakFinderPlugin:
     def pytest_collection_modifyitems(
         self, config: Config, items: List[nodes.Item]
     ) -> None:
-        if not self.lastfailed:
+        if not self.target:
             self.report_status = "no previously failed tests, not skipping."
             return
 
-        target = self.cache.get("cache/leakfinder-target", {})
-
-        import ipdb
-
-        ipdb.set_trace()
+        
         # check all item nodes until we find a match on last failed
         failed_index = None
         for index, item in enumerate(items):
-            if item.nodeid == self.lastfailed:
+            if item.nodeid == self.target:
                 failed_index = index
                 break
 
         # If the previously failed test was not found among the test items,
         # do not skip any tests.
-        if failed_index is None :
-            self.report_status = "previously failed test not found, not skipping."
-        else:
-            # deselect group B
-            total_target = items[:failed_index]
-            group_A = items[:len(total_target)//2] 
-            group_B = items[len(total_target)//2:-1]
-        
-            # deselect group B
-            del items[len(total_target)//2:-1]
-            import ipdb;ipdb.set_trace()
-            
-            # deselect group A
-            # del items[:len(total_target)//2]
-            config.hook.pytest_deselected(items=group_B)
-
-            # TODO set in cache wich group we actually executed
-            # if everything passes, we'll take the other group next run (plus the failed target)
-            # if it fails, we split the group again
+        if failed_index:
+            new_items = bizect(items[:failed_index + 1], steps=self.previous["steps"])
+            deselected = set(items) - set(new_items)
+            items[:] = new_items
+            config.hook.pytest_deselected(items=deselected)
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
-        if report.failed:
-            # Mark test as the last failing and interrupt the test session.
-            self.lastfailed = report.nodeid
-            assert self.session is not None
-            self.session.shouldstop = (
-                "Test failed, continuing from this test next run."
-            )
-
-        elif report.when == "call":      # If the test was actually run and did pass.
-            # Remove test from the failed ones, if exists.
-            if report.nodeid == self.lastfailed:
-                self.lastfailed = None
-
-    def pytest_report_collectionfinish(self) -> Optional[str]:
-        if self.config.getoption("verbose") >= 0 and self.report_status:
-            return f"leakfinder: {self.report_status}"
-        return None
+        if not self.previous["steps"] and report.failed:
+            # the first fail on the first run set the target 
+            self.previous["target"] = report.nodeid
+            self.previous["steps"] += "a"
+            self.session.shouldstop = True
+            print(f"\nLeak finder: target set to {report.nodeid}")
+        elif report.nodeid == self.previous["target"] and report.when == "call":
+            if report.failed:
+                print("\nLeak finder: The group selected still fails. Let's do a new partition.")
+                self.previous["steps"] += "a"
+            else:  
+                print("\nLeak finder: We reach the target and nothing failed. Let's change the last half.")
+                self.previous["steps"] = self.previous["steps"][:-1] + "b"
 
     def pytest_sessionfinish(self) -> None:
-        self.cache.set(CACHE_DIR, self.lastfailed)
+        self.cache.set(CACHE_NAME, self.previous)
