@@ -1,64 +1,104 @@
 # -*- coding: utf-8 -*-
+import pytest
+
+from pytest_leak_finder import bizect
 
 
-def test_bar_fixture(testdir):
-    """Make sure that pytest accepts our fixture."""
-
-    # create a temporary pytest test module
+@pytest.fixture
+def module_with_a_leaking_test(testdir):
     testdir.makepyfile("""
-        def test_sth(bar):
-            assert bar == "europython2015"
+    l = []
+    
+    def test1():
+        assert True
+
+
+    def test2():
+        assert True
+
+
+    def test3():
+        global l
+        l.append("leak")
+        assert True
+
+    
+    def test4():
+        assert True
+
+
+    def test5():
+        assert l == []
+
+
+    def test6():
+        assert True
     """)
 
-    # run pytest with the following cmd args
+
+def test_first_run_set_target(testdir, module_with_a_leaking_test):
     result = testdir.runpytest(
-        '--foo=europython2015',
+        '--leak-finder',
         '-v'
     )
-
-    # fnmatch_lines does an assertion internally
     result.stdout.fnmatch_lines([
-        '*::test_sth PASSED*',
-    ])
+        'test_first_run_set_target.py::test5 FAILED*',
+        "Leak finder: target set to test_first_run_set_target.py::test5",
+    ], consecutive=True)
+    assert result.ret == 2
 
-    # make sure that that we get a '0' exit code for the testsuite
+
+def test_second_passed(testdir, module_with_a_leaking_test):
+    testdir.runpytest('--leak-finder')
+    result = testdir.runpytest('--leak-finder', '-v')
+    result.stdout.fnmatch_lines([
+        'test_second_passed.py::test5 PASSED*',
+        "Leak finder: We reach the target and nothing failed. Let's change the last half."
+    ], consecutive=True)
     assert result.ret == 0
 
 
-def test_help_message(testdir):
-    result = testdir.runpytest(
-        '--help',
-    )
-    # fnmatch_lines does an assertion internally
+def test_3rd_run_set_target(testdir, module_with_a_leaking_test):
+    testdir.runpytest('--leak-finder')
+    testdir.runpytest('--leak-finder')
+    result = testdir.runpytest('--leak-finder', '-v')
+    
     result.stdout.fnmatch_lines([
-        'leak_finder:',
-        '*--foo=DEST_FOO*Set the value for the fixture "bar".',
-    ])
+        'test_3rd_run_set_target.py::test5 FAILED*',
+        "Leak finder: The group selected still fails. Let's do a new partition."
+    ], consecutive=True)
+    assert result.ret == 1
 
 
-def test_hello_ini_setting(testdir):
-    testdir.makeini("""
-        [pytest]
-        HELLO = world
-    """)
-
-    testdir.makepyfile("""
-        import pytest
-
-        @pytest.fixture
-        def hello(request):
-            return request.config.getini('HELLO')
-
-        def test_hello_world(hello):
-            assert hello == 'world'
-    """)
-
-    result = testdir.runpytest('-v')
-
-    # fnmatch_lines does an assertion internally
+def test_4th_run_set_target(testdir, module_with_a_leaking_test):
+    testdir.runpytest('--leak-finder')
+    testdir.runpytest('--leak-finder')
+    testdir.runpytest('--leak-finder')
+    result = testdir.runpytest('--leak-finder', '-v')
+    
     result.stdout.fnmatch_lines([
-        '*::test_hello_world PASSED*',
-    ])
+        'test_4th_run_set_target.py::test3 PASSED*',
+        'test_4th_run_set_target.py::test5 FAILED*',
+        "Leak finder: The group selected still fails. Let's do a new partition."
+    ], consecutive=True)
+    assert result.ret == 1
 
-    # make sure that that we get a '0' exit code for the testsuite
-    assert result.ret == 0
+
+@pytest.mark.parametrize('steps, expected', [
+    ("a", [0, 1, 2, 3, 4, 9]),
+    ("aa", [0, 1, 2, 9]),
+    ("aaa", [0, 1, 9]),
+    ("aaaa", [0, 9]),
+    ("aaaaa", [0, 9]),
+    
+    ("b", [5, 6, 7, 8, 9]),
+    ("ba", [5, 6, 9]),
+    ("baa", [5, 9]),
+    ("baa", [5, 9]),
+    ("bab", [6, 9]),
+    ("bb", [7, 8, 9]),
+    ("bba", [7, 9]),
+    ("bbb", [8, 9]),
+])
+def test_bizect(steps, expected):
+    assert bizect(list(range(10)), steps=steps) == expected

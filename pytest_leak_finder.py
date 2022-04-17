@@ -36,7 +36,7 @@ def pytest_sessionfinish(session: Session) -> None:
     if not session.config.getoption("leakfinder"):
         assert session.config.cache is not None
         # Clear the cache if the plugin is not active.
-        session.config.cache.set(CACHE_NAME, {})
+        session.config.cache.set(CACHE_NAME, {"steps": "", "target": None})
 
 
 def bizect(l, steps="a"):

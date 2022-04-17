@@ -21,7 +21,7 @@ setup(
     maintainer_email="gaitan@gmail.com",
     license="MIT",
     url="https://github.com/mgaitan/pytest-leak_finder",
-    description="Find the needle in the haystack",
+    description="Find the previous test that makes another to fail",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     py_modules=["pytest_leak_finder"],
