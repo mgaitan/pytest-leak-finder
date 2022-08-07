@@ -20,7 +20,7 @@ setup(
     maintainer="Martín Gaitán",
     maintainer_email="gaitan@gmail.com",
     license="MIT",
-    url="https://github.com/mgaitan/pytest-leak_finder",
+    url="https://github.com/mgaitan/pytest-leak-finder",
     description="Find the previous test that makes another to fail",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
