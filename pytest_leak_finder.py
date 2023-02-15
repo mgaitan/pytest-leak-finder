@@ -112,9 +112,7 @@ class LeakFinderPlugin:
                 )
                 self.previous["steps"] += "a"
             else:
-                self.msg_to_report = (
-                    "We reach the target and nothing failed. Let's change the last half."
-                )
+                self.msg_to_report = "We reach the target and nothing failed. Let's change the last half."
                 self.previous["steps"] = self.previous["steps"][:-1] + "b"
 
     def pytest_terminal_summary(self, terminalreporter: "TerminalReporter") -> None:
