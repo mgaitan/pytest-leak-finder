@@ -1,4 +1,5 @@
 # this module is exclude from CI colecctions
+import pytest
 
 l = []
 

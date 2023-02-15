@@ -21,4 +21,4 @@ jobs:
           pip install -e .[dev]
       - name: Test with pytest
         run: |
-          pytest --ignore=tests/test_demo.py
+          pytest --ignore=demo/

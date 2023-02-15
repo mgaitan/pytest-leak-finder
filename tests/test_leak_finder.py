@@ -43,6 +43,7 @@ def test_first_run_set_target(testdir, module_with_a_leaking_test):
         [
             "test_first_run_set_target.py::test5 FAILED*",
             "Target set to: test_first_run_set_target.py::test5",
+            "Next step: a",
         ]
     )
     assert result.ret == 2
@@ -55,6 +56,7 @@ def test_second_passed(testdir, module_with_a_leaking_test):
         [
             "test_second_passed.py::test5 PASSED*",
             "We reach the target and nothing failed. Let's change the last half.",
+            "Next step: ba",
         ]
     )
     assert result.ret == 0
@@ -67,24 +69,10 @@ def test_3rd_run_set_target(testdir, module_with_a_leaking_test):
 
     result.stdout.fnmatch_lines(
         [
+            "test_3rd_run_set_target.py::test3 PASSED*",
             "test_3rd_run_set_target.py::test5 FAILED*",
             "The group selected still fails. Let's do a new partition.",
-        ]
-    )
-    assert result.ret == 1
-
-
-def test_4th_run_set_target(testdir, module_with_a_leaking_test):
-    testdir.runpytest("--leak-finder")
-    testdir.runpytest("--leak-finder")
-    testdir.runpytest("--leak-finder")
-    result = testdir.runpytest("--leak-finder", "-v")
-
-    result.stdout.fnmatch_lines(
-        [
-            "test_4th_run_set_target.py::test3 PASSED*",
-            "test_4th_run_set_target.py::test5 FAILED*",
-            "The group selected still fails. Let's do a new partition.",
+            "Next step: baa",
         ]
     )
     assert result.ret == 1
