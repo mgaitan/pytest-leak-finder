@@ -21,7 +21,7 @@ setup(
     maintainer_email="gaitan@gmail.com",
     license="MIT",
     url="https://github.com/mgaitan/pytest-leak-finder",
-    description="Find the previous test that makes another to fail",
+    description="Find the test that's leaking before the one that fails",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     py_modules=["pytest_leak_finder"],

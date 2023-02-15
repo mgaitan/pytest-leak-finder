@@ -109,9 +109,7 @@ class LeakFinderPlugin:
             self.msg_to_report = f"Target set to: {report.nodeid}"
         elif report.nodeid == self.previous["target"] and report.when == "call":
             if report.failed and self.leak_candidate:
-                self.msg_to_report = (
-                    "We found a leak!"
-                )
+                self.msg_to_report = "We found a leak!"
             elif report.failed:
                 self.msg_to_report = (
                     "The group selected still fails. Let's do a new partition."
@@ -120,7 +118,9 @@ class LeakFinderPlugin:
             else:
                 self.msg_to_report = "We reach the target and nothing failed. Let's change the last half."
                 last = self.previous["steps"][-1]
-                self.previous["steps"] = self.previous["steps"][:-1] + "ba" if last == "a" else "aa"
+                self.previous["steps"] = (
+                    self.previous["steps"][:-1] + "ba" if last == "a" else "aa"
+                )
 
     def pytest_terminal_summary(self, terminalreporter: "TerminalReporter") -> None:
         tr = terminalreporter
@@ -133,7 +133,6 @@ class LeakFinderPlugin:
             else:
                 tr.write_line(f"Next step: {self.previous['steps']}")
                 tr.write_line(f"Current target is: {self.previous['target']}")
-
 
     def pytest_sessionfinish(self) -> None:
         self.cache.set(CACHE_NAME, self.previous)
