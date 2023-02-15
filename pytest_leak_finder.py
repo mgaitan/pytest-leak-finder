@@ -41,24 +41,24 @@ def pytest_sessionfinish(session: Session) -> None:
 
 def bizect(l, steps="a"):
     """
-    given a list, select the a/b n-th group plus the last element 
+    given a list, select the a/b n-th group plus the last element
 
     >>> l = list(range(10))
-    >>> bizect(l)                                                                                                                                            
+    >>> bizect(l)
     [0, 1, 2, 3, 4, 9]
-    >>> bizect(l, steps="b")                                                                                                                                            
+    >>> bizect(l, steps="b")
     [5, 6, 7, 8, 9]
-    >>> bizect(l, "ba")                                                                                                                                      
+    >>> bizect(l, "ba")
     [5, 6, 9]
-    >>> bizect(l, "bb")                                                                                                                                      
+    >>> bizect(l, "bb")
     [7, 8, 9]
     """
     r = l.copy()
     for key in steps:
         if key == "a":
-            r = r[:len(r)//2]
-        else: 
-            r = r[len(r)//2:-1]
+            r = r[: len(r) // 2]
+        else:
+            r = r[len(r) // 2 : -1]
         r += [l[-1]]
     return r
 
@@ -69,12 +69,12 @@ class LeakFinderPlugin:
         self.session: Optional[Session] = None
         self.report_status = ""
         self.cache: Cache = config.cache
-        self.previous = self.cache.get(CACHE_NAME, {"steps": "", "target": None}) 
+        self.previous = self.cache.get(CACHE_NAME, {"steps": "", "target": None})
         self.target = self.previous.get("target")
-
 
     def pytest_sessionstart(self, session: Session) -> None:
         self.session = session
+        self.msg_to_report = None
 
     def pytest_collection_modifyitems(
         self, config: Config, items: List[nodes.Item]
@@ -83,7 +83,6 @@ class LeakFinderPlugin:
             self.report_status = "no previously failed tests, not skipping."
             return
 
-        
         # check all item nodes until we find a match on last failed
         failed_index = None
         for index, item in enumerate(items):
@@ -94,25 +93,37 @@ class LeakFinderPlugin:
         # If the previously failed test was not found among the test items,
         # do not skip any tests.
         if failed_index:
-            new_items = bizect(items[:failed_index + 1], steps=self.previous["steps"])
+            new_items = bizect(items[: failed_index + 1], steps=self.previous["steps"])
             deselected = set(items) - set(new_items)
             items[:] = new_items
             config.hook.pytest_deselected(items=deselected)
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         if not self.previous["steps"] and report.failed:
-            # the first fail on the first run set the target 
+            # the first fail on the first run set the target
             self.previous["target"] = report.nodeid
             self.previous["steps"] += "a"
             self.session.shouldstop = True
-            print(f"\nLeak finder: target set to {report.nodeid}")
+            self.msg_to_report = f"Target set to: {report.nodeid}"
         elif report.nodeid == self.previous["target"] and report.when == "call":
             if report.failed:
-                print("\nLeak finder: The group selected still fails. Let's do a new partition.")
+                self.msg_to_report = (
+                    "The group selected still fails. Let's do a new partition."
+                )
                 self.previous["steps"] += "a"
-            else:  
-                print("\nLeak finder: We reach the target and nothing failed. Let's change the last half.")
+            else:
+                self.msg_to_report = (
+                    "We reach the target and nothing failed. Let's change the last half."
+                )
                 self.previous["steps"] = self.previous["steps"][:-1] + "b"
+
+    def pytest_terminal_summary(self, terminalreporter: "TerminalReporter") -> None:
+        tr = terminalreporter
+        if self.msg_to_report:
+            tr.write_sep("=", "Leak finder")
+            tr.write_line(self.msg_to_report + "\n")
+            tr.write_line(f"Next step: {self.previous['steps']}")
+            tr.write_line(f"Current target is: {self.previous['target']}")
 
     def pytest_sessionfinish(self) -> None:
         self.cache.set(CACHE_NAME, self.previous)

@@ -1,5 +1,8 @@
 # pytest-leak-finder
 
+![](https://github.com/mgaitan/pytest-leak-finder/actions/workflows/pytest.yml/badge.svg)
+![](https://github.com/mgaitan/pytest-leak-finder/actions/workflows/black.yml/badge.svg)
+
 You have a test that passes when executed alone but fails when running its suite. What's happening? My two cents that some previous test keeps the things dirty. But wich one/s, maybe the previous are a lot, right? 
 
 This plugin helps to find a culprit by doing a [binary search](https://en.wikipedia.org/wiki/Binary_search_algorithm) (*alla* [git bisect](https://git-scm.com/docs/git-bisect)) on the collected tests before the target. 
@@ -37,7 +40,13 @@ tests/test_demo.py::test2 PASSED
 tests/test_demo.py::test3 PASSED                                                                              
 tests/test_demo.py::test4 PASSED                                                                              
 tests/test_demo.py::test5 FAILED
-Leak finder: target set to tests/test_demo.py::test5
+
+===================================================== Leak finder =====================================================
+Target set to: pytest-leak-finder/tests/test_demo.py::test5
+
+Next step: a
+Current target is: pytest-leak-finder/tests/test_demo.py::test5
+
 ```
 
 The second execution will run the first half of the tests passed before the target (let's say the half "A", composed by `test1` and `test2`). 
@@ -51,7 +60,12 @@ collected 6 items / 3 deselected / 3 selected
 tests/test_demo.py::test1 PASSED                                                                              
 tests/test_demo.py::test2 PASSED                                                                              
 tests/test_demo.py::test5 PASSED
-Leak finder: We reach the target and nothing failed. Let's change the last half.
+
+===================================================== Leak finder =====================================================
+We reach the target and nothing failed. Let's change the last half.
+
+Next step: b
+Current target is: pytest-leak-finder/tests/test_demo.py::test5
 ```
 
 A new execution takes the group "B", i.e. `test3` and `test4`.
@@ -62,7 +76,12 @@ collected 6 items / 3 deselected / 3 selected
 tests/test_demo.py::test3 PASSED                                                                              
 tests/test_demo.py::test4 PASSED                                                                              
 tests/test_demo.py::test5 FAILED
-Leak finder: The group selected still fails. Let's do a new partition.
+
+===================================================== Leak finder =====================================================
+The group selected still fails. Let's do a new partition.
+
+Next step: ba
+Current target is: pytest-leak-finder/tests/test_demo.py::test5
 ```
 
 
@@ -74,7 +93,12 @@ $ pytest -v --leak-finder
 collected 6 items / 3 deselected / 3 selected                                                                                                                
 tests/test_demo.py::test3 PASSED                                                                              
 tests/test_demo.py::test5 FAILED
-Leak finder: The group selected still fails. Let's do a new partition.
+
+===================================================== Leak finder =====================================================
+The group selected still fails. Let's do a new partition.
+
+Next step: baa
+Current target is: pytest-leak-finder/tests/test_demo.py::test5
 ```
 
 

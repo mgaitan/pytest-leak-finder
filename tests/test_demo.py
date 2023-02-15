@@ -1,3 +1,5 @@
+# this module is exclude from CI colecctions
+
 l = []
 
 def test1():

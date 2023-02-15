@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import pytest
-
 from pytest_leak_finder import bizect
 
 
@@ -43,8 +42,8 @@ def test_first_run_set_target(testdir, module_with_a_leaking_test):
     )
     result.stdout.fnmatch_lines([
         'test_first_run_set_target.py::test5 FAILED*',
-        "Leak finder: target set to test_first_run_set_target.py::test5",
-    ], consecutive=True)
+        "Target set to: test_first_run_set_target.py::test5",
+    ])
     assert result.ret == 2
 
 
@@ -53,8 +52,8 @@ def test_second_passed(testdir, module_with_a_leaking_test):
     result = testdir.runpytest('--leak-finder', '-v')
     result.stdout.fnmatch_lines([
         'test_second_passed.py::test5 PASSED*',
-        "Leak finder: We reach the target and nothing failed. Let's change the last half."
-    ], consecutive=True)
+        "We reach the target and nothing failed. Let's change the last half."
+    ])
     assert result.ret == 0
 
 
@@ -65,8 +64,8 @@ def test_3rd_run_set_target(testdir, module_with_a_leaking_test):
     
     result.stdout.fnmatch_lines([
         'test_3rd_run_set_target.py::test5 FAILED*',
-        "Leak finder: The group selected still fails. Let's do a new partition."
-    ], consecutive=True)
+        "The group selected still fails. Let's do a new partition."
+    ])
     assert result.ret == 1
 
 
@@ -79,8 +78,8 @@ def test_4th_run_set_target(testdir, module_with_a_leaking_test):
     result.stdout.fnmatch_lines([
         'test_4th_run_set_target.py::test3 PASSED*',
         'test_4th_run_set_target.py::test5 FAILED*',
-        "Leak finder: The group selected still fails. Let's do a new partition."
-    ], consecutive=True)
+        "The group selected still fails. Let's do a new partition."
+    ])
     assert result.ret == 1
 
 
