@@ -1,7 +1,9 @@
 # pytest-leak-finder
 
-![](https://github.com/mgaitan/pytest-leak-finder/actions/workflows/pytest.yml/badge.svg)
-![](https://github.com/mgaitan/pytest-leak-finder/actions/workflows/black.yml/badge.svg)
+[![PyPI version](https://badge.fury.io/py/pytest-leak-finder.svg)](https://badge.fury.io/py/pytest-leak-finder)
+[![tests](https://github.com/mgaitan/pytest-leak-finder/actions/workflows/pytest.yml/badge.svg)](https://github.com/mgaitan/pytest-leak-finder/actions/workflows/pytest.yml)
+[![black](https://github.com/mgaitan/pytest-leak-finder/actions/workflows/black.yml/badge.svg)](https://github.com/mgaitan/pytest-leak-finder/actions/workflows/black.yml)
+
 
 You have a test that passes when executed alone but fails when running its suite. What's happening? My two cents that some previous test keeps the things dirty. But wich one/s, maybe the previous are a lot, right? 
 
