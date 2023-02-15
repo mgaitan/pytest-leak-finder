@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import codecs
 import os
 
 from setuptools import setup
 
+version = "0.2.0"
+readme = open("README.md", encoding="utf-8").read()
+changes = open("CHANGELOG.md", encoding="utf-8").read()
 
-def read(fname):
-    file_path = os.path.join(os.path.dirname(__file__), fname)
-    return codecs.open(file_path, encoding="utf-8").read()
+long_description = f"{readme}\n\n{changes}"
 
 
 setup(
     name="pytest-leak-finder",
-    version="0.1.0",
+    version=version,
     author="Martín Gaitán",
     author_email="gaitan@gmail.com",
     maintainer="Martín Gaitán",
@@ -22,7 +22,7 @@ setup(
     license="MIT",
     url="https://github.com/mgaitan/pytest-leak-finder",
     description="Find the test that's leaking before the one that fails",
-    long_description=read("README.md"),
+    long_description=long_description,
     long_description_content_type="text/markdown",
     py_modules=["pytest_leak_finder"],
     python_requires=">=3.7",
