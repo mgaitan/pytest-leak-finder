@@ -89,5 +89,4 @@ Last step was: ba
 ```
 
 
-And there is it, `test3` was the problematic test we were looking for! 
-
+And there it is, `test3` was the problematic test we were looking for! 
