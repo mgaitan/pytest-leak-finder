@@ -75,6 +75,7 @@ class LeakFinderPlugin:
     def pytest_sessionstart(self, session: Session) -> None:
         self.session = session
         self.msg_to_report = None
+        self.leak_candidate = None
 
     def pytest_collection_modifyitems(
         self, config: Config, items: List[nodes.Item]
@@ -96,6 +97,7 @@ class LeakFinderPlugin:
             new_items = bizect(items[: failed_index + 1], steps=self.previous["steps"])
             deselected = set(items) - set(new_items)
             items[:] = new_items
+            self.leak_candidate = items[0].nodeid if len(items) == 2 else None
             config.hook.pytest_deselected(items=deselected)
 
     def pytest_runtest_logreport(self, report: TestReport) -> None:
@@ -106,7 +108,11 @@ class LeakFinderPlugin:
             self.session.shouldstop = True
             self.msg_to_report = f"Target set to: {report.nodeid}"
         elif report.nodeid == self.previous["target"] and report.when == "call":
-            if report.failed:
+            if report.failed and self.leak_candidate:
+                self.msg_to_report = (
+                    "We found a leak!"
+                )
+            elif report.failed:
                 self.msg_to_report = (
                     "The group selected still fails. Let's do a new partition."
                 )
@@ -121,8 +127,13 @@ class LeakFinderPlugin:
         if self.msg_to_report:
             tr.write_sep("=", "Leak finder")
             tr.write_line(self.msg_to_report + "\n")
-            tr.write_line(f"Next step: {self.previous['steps']}")
-            tr.write_line(f"Current target is: {self.previous['target']}")
+            if self.leak_candidate:
+                tr.write_line(f"Leak found in: {self.leak_candidate}")
+                tr.write_line(f"Last step was: {self.previous['steps']}")
+            else:
+                tr.write_line(f"Next step: {self.previous['steps']}")
+                tr.write_line(f"Current target is: {self.previous['target']}")
+
 
     def pytest_sessionfinish(self) -> None:
         self.cache.set(CACHE_NAME, self.previous)

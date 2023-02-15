@@ -82,12 +82,12 @@ tests/test_demo.py::test3 PASSED
 tests/test_demo.py::test5 FAILED
 
 ===================================================== Leak finder =====================================================
-The group selected still fails. Let's do a new partition.
+We found a leak!
 
-Next step: baa
-Current target is: pytest-leak-finder/tests/test_demo.py::test5
+Leak found in: pytest-leak-finder/demo/test_demo.py::test3
+Last step was: ba
 ```
 
 
-And there is it, `test3` is the problematic test we were looking for! 
+And there is it, `test3` was the problematic test we were looking for! 
 

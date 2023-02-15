@@ -71,8 +71,9 @@ def test_3rd_run_set_target(testdir, module_with_a_leaking_test):
         [
             "test_3rd_run_set_target.py::test3 PASSED*",
             "test_3rd_run_set_target.py::test5 FAILED*",
-            "The group selected still fails. Let's do a new partition.",
-            "Next step: baa",
+            "We found a leak!",
+            "Leak found in: test_3rd_run_set_target.py::test3",
+            "Last step was: ba",
         ]
     )
     assert result.ret == 1
