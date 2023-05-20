@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 import pytest
+
 from pytest_leak_finder import bizect
 
 
@@ -8,7 +8,7 @@ def module_with_a_leaking_test(testdir):
     testdir.makepyfile(
         """
     l = []
-    
+
     def test1():
         assert True
 
@@ -22,7 +22,7 @@ def module_with_a_leaking_test(testdir):
         l.append("leak")
         assert True
 
-    
+
     def test4():
         assert True
 
@@ -77,6 +77,22 @@ def test_3rd_run_set_target(testdir, module_with_a_leaking_test):
         ]
     )
     assert result.ret == 1
+
+
+def test_backtrack(testdir, module_with_a_leaking_test):
+    testdir.runpytest("--leak-finder")
+    testdir.runpytest("--leak-finder")
+    testdir.runpytest("--leak-finder")
+    result = testdir.runpytest("--leak-finder", "-v", "--backtrack=2")
+
+    result.stdout.fnmatch_lines(
+        [
+            "Target set to: test_backtrack.py::test5",
+            "Next step: a",
+            "Current target is: test_backtrack.py::test5",
+        ]
+    )
+    assert result.ret == 2
 
 
 @pytest.mark.parametrize(

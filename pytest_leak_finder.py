@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from typing import TYPE_CHECKING, List, Optional
 
 import pytest
@@ -11,6 +9,7 @@ from _pytest.reports import TestReport
 
 if TYPE_CHECKING:
     from _pytest.cacheprovider import Cache
+    from _pytest.terminal import TerminalReporter
 
 CACHE_NAME = "cache/leakfinder"
 
@@ -23,6 +22,13 @@ def pytest_addoption(parser: Parser) -> None:
         default=False,
         dest="leakfinder",
         help="Bisect previous passed tests until find one that fail",
+    )
+    group.addoption(
+        "--backtrack",
+        action="store",
+        default=0,
+        dest="backtrack",
+        help="Backtrack n steps to potentially find more leaks.",
     )
 
 
@@ -68,8 +74,12 @@ class LeakFinderPlugin:
         self.config = config
         self.session: Optional[Session] = None
         self.report_status = ""
-        self.cache: Cache = config.cache
+        self.cache: "Cache" = config.cache
         self.previous = self.cache.get(CACHE_NAME, {"steps": "", "target": None})
+        backtrack = config.getoption("backtrack")
+        if backtrack and self.previous["steps"]:
+            self.previous["steps"] = self.previous["steps"][: -int(backtrack)]
+
         self.target = self.previous.get("target")
 
     def pytest_sessionstart(self, session: Session) -> None:
