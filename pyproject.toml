@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pytest-leak-finder"
-version = "0.2.0"
+version = "0.3.0"
 description = "Find the test that's leaking before the one that fails"
 readme = "README.md"
 requires-python = ">=3.10"
