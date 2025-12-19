@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pytest-leak-finder"
+version = "0.2.0"
+description = "Find the test that's leaking before the one that fails"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Martín Gaitán", email = "gaitan@gmail.com"}
+]
+keywords = ["pytest", "testing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Pytest",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Testing",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "pytest>=3.5.0",
+]
+
+[project.urls]
+homepage = "https://github.com/mgaitan/pytest-leak-finder"
+
+[project.entry-points.pytest11]
+leak_finder = "pytest_leak_finder"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pytest_leak_finder.py"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.9",
+    "ty",
+    "ipdb",
+]
+docs = [
+    "sphinx>=8",
+]
