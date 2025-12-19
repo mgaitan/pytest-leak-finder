@@ -104,7 +104,8 @@ class LeakFinderPlugin:
             # the first fail on the first run set the target
             self.previous["target"] = report.nodeid
             self.previous["steps"] += "a"
-            self.session.shouldstop = True
+            if self.session is not None:
+                self.session.shouldstop = True
             self.msg_to_report = f"Target set to: {report.nodeid}"
         elif report.nodeid == self.previous["target"] and report.when == "call":
             if report.failed and self.leak_candidate:
