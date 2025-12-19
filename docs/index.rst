@@ -1,5 +1,5 @@
 pytest-leak-finder
-=================
+==================
 
 pytest-leak-finder helps you identify which earlier test leaks state and causes
 an unrelated failure later in the suite. It uses a binary-search strategy over
