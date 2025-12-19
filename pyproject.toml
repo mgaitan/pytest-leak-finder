@@ -52,3 +52,6 @@ dev = [
 docs = [
     "sphinx>=8",
 ]
+
+[tool.pytest.ini_options]
+addopts = "--ignore=demo"
