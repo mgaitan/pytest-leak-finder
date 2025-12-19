@@ -9,6 +9,7 @@ from _pytest.reports import TestReport
 
 if TYPE_CHECKING:
     from _pytest.cacheprovider import Cache
+    from _pytest.terminal import TerminalReporter
 
 CACHE_NAME = "cache/leakfinder"
 
@@ -37,27 +38,27 @@ def pytest_sessionfinish(session: Session) -> None:
         session.config.cache.set(CACHE_NAME, {"steps": "", "target": None})
 
 
-def bizect(l, steps="a"):
+def bizect(items, steps="a"):
     """
     given a list, select the a/b n-th group plus the last element
 
-    >>> l = list(range(10))
-    >>> bizect(l)
+    >>> items = list(range(10))
+    >>> bizect(items)
     [0, 1, 2, 3, 4, 9]
-    >>> bizect(l, steps="b")
+    >>> bizect(items, steps="b")
     [5, 6, 7, 8, 9]
-    >>> bizect(l, "ba")
+    >>> bizect(items, "ba")
     [5, 6, 9]
-    >>> bizect(l, "bb")
+    >>> bizect(items, "bb")
     [7, 8, 9]
     """
-    r = l.copy()
+    r = items.copy()
     for key in steps:
         if key == "a":
             r = r[: len(r) // 2]
         else:
             r = r[len(r) // 2 : -1]
-        r += [l[-1]]
+        r += [items[-1]]
     return r
 
 

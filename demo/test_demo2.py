@@ -4,9 +4,10 @@ https://github.com/mgaitan/pytest-leak-finder/issues/4
 
 The original algorithm take a lot more steps to find the leak.
 """
+
 import pytest
 
-l = []
+leak_state = []
 
 
 @pytest.mark.parametrize("arg", range(10))
@@ -15,7 +16,7 @@ def test1(arg):
 
 
 def test2():
-    l.append("leak")
+    leak_state.append("leak")
     assert True
 
 
@@ -24,5 +25,5 @@ def test3(arg):
     assert True
 
 
-def test3():
-    assert l == []
+def test4():
+    assert leak_state == []

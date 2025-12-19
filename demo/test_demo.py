@@ -1,6 +1,6 @@
 # this module is exclude from CI colecctions
 
-l = []
+leak_state = []
 
 
 def test1():
@@ -12,8 +12,8 @@ def test2():
 
 
 def test3():
-    global l
-    l.append("leak")
+    global leak_state
+    leak_state.append("leak")
     assert True
 
 
@@ -22,7 +22,7 @@ def test4():
 
 
 def test5():
-    assert l == []
+    assert leak_state == []
 
 
 def test6():
